@@ -692,6 +692,9 @@ struct plx_node* plx_parse_identifier_or_struct(
   struct plx_node* const identifier = plx_parse_identifier(tokenizer);
   if (plx_unlikely(identifier == NULL)) return NULL;
 
+  // TODO: Enable struct parsing.
+  return identifier;
+
   // Parse the struct.
   if (!plx_accept_token(tokenizer, PLX_TOKEN_OPEN_CURLY_BRACE)) {
     return identifier;
