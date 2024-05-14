@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLX_CONSTANT_CHECKER_H
-#define PLX_CONSTANT_CHECKER_H
+#ifndef PLX_AST_VALIDATOR_H
+#define PLX_AST_VALIDATOR_H
 
 #include <stdbool.h>
 
 #include "ast.h"
 
-// Checks constants for consistency in the abstract syntax tree.
-bool plx_check_constants(struct plx_node* node);
+// Validates the abstract syntax tree for correctness.
+bool plx_validate_ast(const struct plx_node* node);
 
-#endif  // PLX_CONSTANT_CHECKER_H
+#endif  // PLX_AST_VALIDATOR_H

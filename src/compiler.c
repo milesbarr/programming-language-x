@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #include "ast.h"
-#include "constant_checker.h"
+#include "ast_validator.h"
 #include "constant_folder.h"
 #include "dir.h"
 #include "error.h"
@@ -132,8 +132,8 @@ bool plx_compile(const char* const input_dir, const char* const output_dir,
   while (plx_fold_constants(module)) {
   }
 
-  // Constant checking
-  if (!plx_check_constants(module)) return false;
+  // AST validation
+  if (!plx_validate_ast(module)) return false;
 
   // Determine the output name.
   char full_output_dir[PLX_PATH_MAX];
