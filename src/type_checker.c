@@ -21,19 +21,19 @@
 #include "symbol_table_entry.h"
 #include "types.h"
 
-static void plx_unexpected_type(const struct plx_node* const node) {
-  plx_error("unexpected type");
-  plx_print_source_code(
-      &node->loc,
-      /*annotation=*/"the type of this expression is unexpected",
-      PLX_SOURCE_ANNOTATION_ERROR);
+static void plx_unexpected_type(const struct plx_node* const node,
+                                const char* const expected) {
+  plx_error("expected %s", expected);
+  char annotation[256] = "this expression should evaluate to ";
+  strcat(annotation, expected);
+  plx_print_source_code(&node->loc, annotation, PLX_SOURCE_ANNOTATION_ERROR);
 }
 
 static void plx_operand_type_mismatch(const struct plx_node* const node) {
   plx_error("operand type mismatch");
   plx_print_source_code(
       &node->loc,
-      /*annotation=*/"the type of the operands in this expression must match",
+      /*annotation=*/"the types of the operands in this expression must match",
       PLX_SOURCE_ANNOTATION_ERROR);
 }
 
@@ -169,7 +169,7 @@ bool plx_type_check(struct plx_node* const node,
            stmt = stmt->next) {
         if (!plx_type_check(stmt, return_type)) result = false;
         if (stmt->type != NULL && stmt->type->kind != PLX_NODE_VOID_TYPE) {
-          plx_unexpected_type(stmt);
+          plx_unexpected_type(stmt, /*expected=*/"void");
           result = false;
         }
       }
@@ -181,7 +181,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the condition.
       if (!plx_type_check(cond, return_type)) result = false;
       if (cond->type != NULL && cond->type->kind != PLX_NODE_BOOL_TYPE) {
-        plx_unexpected_type(cond);
+        plx_unexpected_type(cond, /*expected=*/"a bool");
         result = false;
       }
 
@@ -199,7 +199,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the condition.
       if (!plx_type_check(cond, return_type)) result = false;
       if (cond->type != NULL && cond->type->kind != PLX_NODE_BOOL_TYPE) {
-        plx_unexpected_type(cond);
+        plx_unexpected_type(cond, /*expected=*/"a bool");
         result = false;
       }
 
@@ -269,7 +269,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the left operand.
       if (!plx_type_check(left, return_type)) result = false;
       if (left->type != NULL && !plx_is_logical_type(left->type)) {
-        plx_unexpected_type(left);
+        plx_unexpected_type(left, /*expected=*/"an integer or bool");
         result = false;
         break;
       }
@@ -277,7 +277,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the right operand.
       if (!plx_type_check(right, return_type)) result = false;
       if (right->type != NULL && !plx_is_logical_type(right->type)) {
-        plx_unexpected_type(right);
+        plx_unexpected_type(right, /*expected=*/"an integer or bool");
         result = false;
         break;
       }
@@ -306,7 +306,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the left operand.
       if (!plx_type_check(left, return_type)) result = false;
       if (left->type != NULL && !plx_is_equality_type(left->type)) {
-        plx_unexpected_type(left);
+        plx_unexpected_type(left, /*expected=*/"an integer, bool, or string");
         result = false;
         break;
       }
@@ -314,7 +314,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the right operand.
       if (!plx_type_check(right, return_type)) result = false;
       if (right->type != NULL && !plx_is_equality_type(right->type)) {
-        plx_unexpected_type(right);
+        plx_unexpected_type(right, /*expected=*/"an integer, bool, or string");
         result = false;
         break;
       }
@@ -339,7 +339,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the left operand.
       if (!plx_type_check(left, return_type)) result = false;
       if (left->type != NULL && !plx_is_numeric_type(left->type)) {
-        plx_unexpected_type(left);
+        plx_unexpected_type(left, /*expected=*/"a number");
         result = false;
         break;
       }
@@ -347,7 +347,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the right operand.
       if (!plx_type_check(right, return_type)) result = false;
       if (right->type != NULL && !plx_is_numeric_type(right->type)) {
-        plx_unexpected_type(right);
+        plx_unexpected_type(right, /*expected=*/"a number");
         result = false;
         break;
       }
@@ -370,7 +370,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the left operand.
       if (!plx_type_check(left, return_type)) result = false;
       if (left->type != NULL && !plx_is_numeric_type(left->type)) {
-        plx_unexpected_type(left);
+        plx_unexpected_type(left, /*expected=*/"a number");
         result = false;
         break;
       }
@@ -378,7 +378,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the right operand.
       if (!plx_type_check(right, return_type)) result = false;
       if (right->type != NULL && !plx_is_numeric_type(right->type)) {
-        plx_unexpected_type(right);
+        plx_unexpected_type(right, /*expected=*/"a number");
         result = false;
         break;
       }
@@ -405,7 +405,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the left operand.
       if (!plx_type_check(left, return_type)) result = false;
       if (left->type != NULL && !plx_is_int_type(left->type)) {
-        plx_unexpected_type(left);
+        plx_unexpected_type(left, /*expected=*/"an integer");
         result = false;
         break;
       }
@@ -413,7 +413,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the right operand.
       if (!plx_type_check(right, return_type)) result = false;
       if (right->type != NULL && !plx_is_int_type(right->type)) {
-        plx_unexpected_type(right);
+        plx_unexpected_type(right, /*expected=*/"an integer");
         result = false;
         break;
       }
@@ -438,7 +438,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the operand.
       if (!plx_type_check(operand, return_type)) result = false;
       if (operand->type != NULL && !plx_is_logical_type(operand->type)) {
-        plx_unexpected_type(operand);
+        plx_unexpected_type(operand, /*expected=*/"an integer or bool");
         result = false;
         break;
       }
@@ -454,7 +454,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the operand.
       if (!plx_type_check(operand, return_type)) result = false;
       if (operand->type != NULL && !plx_is_numeric_type(operand->type)) {
-        plx_unexpected_type(operand->type);
+        plx_unexpected_type(operand->type, /*expected=*/"a number");
         result = false;
         break;
       }
@@ -485,7 +485,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the operand.
       if (!plx_type_check(operand, return_type)) result = false;
       if (operand->type != NULL && operand->type->kind != PLX_NODE_REF_TYPE) {
-        plx_unexpected_type(operand);
+        plx_unexpected_type(operand, /*expected=*/"a reference");
         result = false;
         break;
       }
@@ -501,7 +501,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the function.
       if (!plx_type_check(func, return_type)) result = false;
       if (func->type != NULL && func->type->kind != PLX_NODE_FUNC_TYPE) {
-        plx_unexpected_type(func);
+        plx_unexpected_type(func, /*expected=*/"a function");
         result = false;
         break;
       }
@@ -558,7 +558,7 @@ bool plx_type_check(struct plx_node* const node,
           // Set the type.
           node->type = value->type->children;
         } else {
-          plx_unexpected_type(value);
+          plx_unexpected_type(value, /*expected=*/"an array or slice");
           result = false;
         }
       }
@@ -566,7 +566,7 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the index.
       if (!plx_type_check(index, return_type)) result = false;
       if (index->type != NULL && !plx_is_int_type(index->type)) {
-        plx_unexpected_type(index);
+        plx_unexpected_type(index, /*expected=*/"an integer");
         result = false;
       }
       break;
@@ -583,7 +583,7 @@ bool plx_type_check(struct plx_node* const node,
           // Set the type.
           node->type = value->type->children;
         } else {
-          plx_unexpected_type(value);
+          plx_unexpected_type(value, /*expected=*/"an array or slice");
           result = false;
         }
       }
@@ -591,14 +591,14 @@ bool plx_type_check(struct plx_node* const node,
       // Type check the start index.
       if (!plx_type_check(start, return_type)) result = false;
       if (start->type != NULL && !plx_is_int_type(start->type)) {
-        plx_unexpected_type(start);
+        plx_unexpected_type(start, /*expected=*/"an integer");
         result = false;
       }
 
       // Type check the end index.
       if (!plx_type_check(end, return_type)) result = false;
       if (end->type != NULL && !plx_is_int_type(end->type)) {
-        plx_unexpected_type(end);
+        plx_unexpected_type(end, /*expected=*/"an integer");
         result = false;
       }
       break;
