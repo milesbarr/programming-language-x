@@ -557,11 +557,11 @@ struct plx_node* plx_parse_unary_expr(struct plx_tokenizer* const tokenizer) {
     case PLX_TOKEN_SUB:
       kind = PLX_NODE_NEG;
       break;
-    case PLX_TOKEN_MUL:
-      kind = PLX_NODE_DEREF;
-      break;
     case PLX_TOKEN_REF:
       kind = PLX_NODE_REF;
+      break;
+    case PLX_TOKEN_MUL:
+      kind = PLX_NODE_DEREF;
       break;
     default:
       return plx_parse_postfix_expr(tokenizer);
