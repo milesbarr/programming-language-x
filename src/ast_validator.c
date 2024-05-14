@@ -42,7 +42,7 @@ static void plx_expr_not_referenceable(const struct plx_node* const node) {
 
 static bool plx_is_referenceable_expr(const struct plx_node* const expr) {
   return expr->kind == PLX_NODE_DEREF || expr->kind == PLX_NODE_INDEX ||
-         expr->kind == PLX_NODE_SLICE || expr->kind == PLX_NODE_IDENTIFIER;
+         expr->kind == PLX_NODE_IDENTIFIER;
 }
 
 bool plx_validate_ast(const struct plx_node* const node) {
