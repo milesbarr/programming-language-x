@@ -58,12 +58,14 @@ struct plx_node* plx_parse_const_def(struct plx_tokenizer* const tokenizer) {
   struct plx_node* const name = plx_parse_identifier(tokenizer);
   if (plx_unlikely(name == NULL)) return NULL;
 
+  // Expect the operator.
   if (!plx_accept_token(tokenizer, PLX_TOKEN_ASSIGN)) return NULL;
 
   // Parse the value.
   struct plx_node* const value = plx_parse_expr(tokenizer);
   if (plx_unlikely(value == NULL)) return NULL;
 
+  // Expect a semicolon.
   if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
 
   // Create the node.
@@ -83,6 +85,7 @@ struct plx_node* plx_parse_var_def_or_decl(
   struct plx_node* const name = plx_parse_identifier(tokenizer);
   if (plx_unlikely(name == NULL)) return NULL;
 
+  // Expect an operator.
   switch (tokenizer->token) {
     case PLX_TOKEN_ASSIGN: {
       plx_next_token(tokenizer);
@@ -91,6 +94,7 @@ struct plx_node* plx_parse_var_def_or_decl(
       struct plx_node* const value = plx_parse_expr(tokenizer);
       if (plx_unlikely(value == NULL)) return NULL;
 
+      // Expect a semicolon.
       if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
 
       // Create the node.
@@ -106,6 +110,7 @@ struct plx_node* plx_parse_var_def_or_decl(
       struct plx_node* const type = plx_parse_type(tokenizer);
       if (plx_unlikely(type == NULL)) return NULL;
 
+      // Expect a semicolon.
       if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
 
       // Create the node.
@@ -137,14 +142,17 @@ struct plx_node* plx_parse_struct_def(struct plx_tokenizer* const tokenizer) {
     struct plx_node* const member_name = plx_parse_identifier(tokenizer);
     if (plx_unlikely(member_name == NULL)) return NULL;
 
+    // Expect a colon.
     if (!plx_accept_token(tokenizer, PLX_TOKEN_COLON)) return NULL;
 
     // Parse the member type.
     struct plx_node* const member_type = plx_parse_type(tokenizer);
     if (plx_unlikely(member_type == NULL)) return NULL;
 
+    // Expect a semicolon.
     if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
 
+    // Create the member node.
     struct plx_node* const member = plx_new_node(PLX_NODE_OTHER, /*loc=*/NULL);
     member->children = member_name;
     member_name->next = member_type;
@@ -205,6 +213,7 @@ struct plx_node* plx_parse_params(struct plx_tokenizer* const tokenizer) {
       struct plx_node* const param_name = plx_parse_identifier(tokenizer);
       if (plx_unlikely(param_name == NULL)) return NULL;
 
+      // Expect a colon.
       if (!plx_accept_token(tokenizer, PLX_TOKEN_COLON)) return NULL;
 
       // Parse the parameter type.
@@ -218,7 +227,10 @@ struct plx_node* plx_parse_params(struct plx_tokenizer* const tokenizer) {
       *next = param;
       next = &param->next;
 
+      // Accept a closing parenthesis.
       if (plx_accept_token(tokenizer, PLX_TOKEN_CLOSE_PAREN)) break;
+
+      // Expect a comma.
       if (!plx_accept_token(tokenizer, PLX_TOKEN_COMMA)) return NULL;
     }
   }
@@ -364,6 +376,7 @@ struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
   struct plx_node* const assignee = plx_parse_unary_expr(tokenizer);
   if (plx_unlikely(assignee == NULL)) return NULL;
 
+  // Accept an operator.
   enum plx_node_kind kind;
   switch (tokenizer->token) {
     case PLX_TOKEN_ASSIGN:
@@ -391,6 +404,7 @@ struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
       kind = PLX_NODE_RSHIFT_ASSIGN;
       break;
     default:
+      // Expect a semicolon.
       if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
       return assignee;
   }
@@ -400,6 +414,7 @@ struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
   struct plx_node* const value = plx_parse_expr(tokenizer);
   if (plx_unlikely(value == NULL)) return NULL;
 
+  // Expect a semicolon.
   if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
 
   // Create the node.
@@ -423,6 +438,7 @@ struct plx_node* plx_parse_logical_expr(struct plx_tokenizer* const tokenizer) {
   struct plx_node* left = plx_parse_rel_expr(tokenizer);
   if (plx_unlikely(left == NULL)) return NULL;
 
+  // Accept an operator.
   const enum plx_token op = tokenizer->token;
   enum plx_node_kind kind;
   switch (op) {
@@ -461,6 +477,7 @@ struct plx_node* plx_parse_rel_expr(struct plx_tokenizer* const tokenizer) {
   struct plx_node* const left = plx_parse_arithmetic_expr(tokenizer);
   if (plx_unlikely(left == NULL)) return NULL;
 
+  // Accept an operator.
   enum plx_node_kind kind;
   switch (tokenizer->token) {
     case PLX_TOKEN_EQ:
@@ -505,6 +522,7 @@ struct plx_node* plx_parse_arithmetic_expr(
   struct plx_node* left = plx_parse_unary_expr(tokenizer);
   if (plx_unlikely(left == NULL)) return NULL;
 
+  // Accept an operator.
   const enum plx_token op = tokenizer->token;
   enum plx_node_kind kind;
   switch (op) {
@@ -549,6 +567,7 @@ struct plx_node* plx_parse_arithmetic_expr(
 }
 
 struct plx_node* plx_parse_unary_expr(struct plx_tokenizer* const tokenizer) {
+  // Accept an operator.
   enum plx_node_kind kind;
   switch (tokenizer->token) {
     case PLX_TOKEN_NOT:
@@ -617,6 +636,7 @@ struct plx_node* plx_parse_postfix_expr(struct plx_tokenizer* const tokenizer) {
         struct plx_node* const start = plx_parse_expr(tokenizer);
         if (plx_unlikely(start == NULL)) return NULL;
 
+        // Parse a slice.
         if (plx_accept_token(tokenizer, PLX_TOKEN_COLON)) {
           // Parse the end.
           struct plx_node* const end = plx_parse_expr(tokenizer);
@@ -707,6 +727,7 @@ struct plx_node* plx_parse_identifier_or_struct(
     struct plx_node* const member_name = plx_parse_identifier(tokenizer);
     if (plx_unlikely(member_name == NULL)) return NULL;
 
+    // Expect a colon.
     if (!plx_accept_token(tokenizer, PLX_TOKEN_COLON)) return NULL;
 
     // Parse the member value.
@@ -855,11 +876,12 @@ struct plx_node* plx_parse_ref_type(struct plx_tokenizer* const tokenizer) {
 
 struct plx_node* plx_parse_array_or_slice_type(
     struct plx_tokenizer* const tokenizer) {
+  // Expect an opening square bracket.
   assert(tokenizer->token == PLX_TOKEN_OPEN_SQUARE_BRACKET);
   const struct plx_source_code_location loc = tokenizer->loc;
   plx_next_token(tokenizer);
 
-  // Parse a slice.
+  // Parse a slice type.
   if (plx_accept_token(tokenizer, PLX_TOKEN_CLOSE_SQUARE_BRACKET)) {
     // Parse the element type.
     struct plx_node* const element_type = plx_parse_type(tokenizer);
@@ -875,6 +897,7 @@ struct plx_node* plx_parse_array_or_slice_type(
   struct plx_node* const len = plx_parse_expr(tokenizer);
   if (plx_unlikely(len == NULL)) return NULL;
 
+  // Expect a closing square bracket.
   if (!plx_accept_token(tokenizer, PLX_TOKEN_CLOSE_SQUARE_BRACKET)) return NULL;
 
   // Parse the element type.

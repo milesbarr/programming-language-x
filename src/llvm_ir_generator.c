@@ -147,7 +147,7 @@ static void plx_llvm_ir_fprintf(FILE* const stream, const char* format, ...) {
   va_end(arg);
 }
 
-static plx_llvm_unnamed_identifier plx_generate_llvm_ir_ref(
+static plx_llvm_unnamed_identifier plx_generate_llvm_ir_ptr(
     const struct plx_node* const node, FILE* const stream,
     plx_llvm_unnamed_identifier* const locals) {
   switch (node->kind) {
@@ -169,7 +169,7 @@ static plx_llvm_unnamed_identifier plx_generate_llvm_ir_ref(
     case PLX_NODE_IDENTIFIER:
       switch (node->entry->scope) {
         case PLX_SYMBOL_SCOPE_LOCAL:
-          return node->entry->llvm_var;
+          return node->entry->llvm_local_var;
         case PLX_SYMBOL_SCOPE_GLOBAL: {
           const plx_llvm_unnamed_identifier result_var = (*locals)++;
           plx_llvm_ir_fprintf(stream,
@@ -248,7 +248,7 @@ void plx_generate_llvm_ir(const struct plx_node* const node,
                             "  store %t %%%u, ptr %%%u\n",
                             locals, param_type, param_type, param_var++,
                             locals);
-        param_name->entry->llvm_var = locals++;
+        param_name->entry->llvm_local_var = locals++;
       }
       plx_generate_llvm_ir_stmt(body, stream, &locals,
                                 /*loop_enter_label=*/0,
@@ -280,7 +280,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
                           "  store %t %%%u, ptr %%%u\n",
                           result_var, value->type, value->type, result_var,
                           value_var);
-      name->entry->llvm_var = result_var;
+      name->entry->llvm_local_var = result_var;
       break;
     }
     case PLX_NODE_VAR_DECL: {
@@ -288,7 +288,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       plx_extract_children(node, &name, &type);
       const plx_llvm_unnamed_identifier result_var = (*locals)++;
       plx_llvm_ir_fprintf(stream, "  %%%u = alloca %t\n", result_var, type);
-      name->entry->llvm_var = result_var;
+      name->entry->llvm_local_var = result_var;
       break;
     }
     case PLX_NODE_NOP:
@@ -377,7 +377,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier value_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
       plx_llvm_ir_fprintf(stream, "  store %t %%%u, ptr %%%u\n", value->type,
@@ -388,7 +388,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -464,7 +464,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -540,7 +540,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -616,7 +616,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -720,7 +720,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -800,7 +800,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -852,7 +852,7 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
       const struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
       const plx_llvm_unnamed_identifier assignee_var =
-          plx_generate_llvm_ir_ref(assignee, stream, locals);
+          plx_generate_llvm_ir_ptr(assignee, stream, locals);
       const plx_llvm_unnamed_identifier left_var = (*locals)++;
       const plx_llvm_unnamed_identifier right_var =
           plx_generate_llvm_ir_expr(value, stream, locals);
@@ -1750,7 +1750,7 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
     case PLX_NODE_REF: {
       const struct plx_node* operand;
       plx_extract_children(node, &operand);
-      return plx_generate_llvm_ir_ref(operand, stream, locals);
+      return plx_generate_llvm_ir_ptr(operand, stream, locals);
     }
     case PLX_NODE_DEREF: {
       const struct plx_node* operand;
@@ -1788,7 +1788,7 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
     case PLX_NODE_SLICE:
     case PLX_NODE_FIELD: {
       const plx_llvm_unnamed_identifier ptr_var =
-          plx_generate_llvm_ir_ref(node, stream, locals);
+          plx_generate_llvm_ir_ptr(node, stream, locals);
       const plx_llvm_unnamed_identifier result_var = (*locals)++;
       plx_llvm_ir_fprintf(stream, "  %%%u = load %t, ptr %%%u\n", result_var,
                           node->type, ptr_var);
@@ -1799,7 +1799,7 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
       switch (node->entry->scope) {
         case PLX_SYMBOL_SCOPE_LOCAL:
           plx_llvm_ir_fprintf(stream, "  %%%u = load %t, ptr %%%u\n",
-                              result_var, node->type, node->entry->llvm_var);
+                              result_var, node->type, node->entry->llvm_local_var);
           break;
         case PLX_SYMBOL_SCOPE_GLOBAL:
           plx_llvm_ir_fprintf(stream, "  %%%u = load %t, ptr @%s\n", result_var,

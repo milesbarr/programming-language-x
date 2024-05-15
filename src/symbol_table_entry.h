@@ -53,8 +53,8 @@ struct plx_symbol_table_entry {
   // Value of the symbol.
   const struct plx_node* value;
 
-  // LLVM unnamed variable.
-  unsigned int llvm_var;
+  // LLVM local variable.
+  unsigned int llvm_local_var;
 };
 
 #endif  // PLX_SYMBOL_TABLE_ENTRY_H
