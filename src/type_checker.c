@@ -248,16 +248,55 @@ bool plx_type_check(struct plx_node* const node,
     case PLX_NODE_ADD_ASSIGN:
     case PLX_NODE_SUB_ASSIGN:
     case PLX_NODE_MUL_ASSIGN:
-    case PLX_NODE_DIV_ASSIGN:
+    case PLX_NODE_DIV_ASSIGN: {
+      struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+
+      // Type check the assignee.
+      if (!plx_type_check(assignee, return_type)) result = false;
+      if (assignee->type != NULL && !plx_is_numeric_type(assignee->type)) {
+        plx_unexpected_type(assignee, /*expected=*/"a number");
+        result = false;
+        break;
+      }
+
+      // Type check the value.
+      if (!plx_type_check(value, return_type)) result = false;
+      if (value->type != NULL && !plx_is_numeric_type(value->type)) {
+        plx_unexpected_type(value, /*expected=*/"a number");
+        result = false;
+        break;
+      }
+
+      // Check for matching types.
+      if (!plx_type_eq(assignee->type, value->type)) {
+        plx_operand_type_mismatch(node);
+        result = false;
+        break;
+      }
+      break;
+    }
     case PLX_NODE_REM_ASSIGN:
     case PLX_NODE_LSHIFT_ASSIGN:
     case PLX_NODE_RSHIFT_ASSIGN: {
       struct plx_node *assignee, *value;
       plx_extract_children(node, &assignee, &value);
 
+      // Type check the assignee.
       if (!plx_type_check(assignee, return_type)) result = false;
+      if (assignee->type != NULL && !plx_is_int_type(assignee->type)) {
+        plx_unexpected_type(assignee, /*expected=*/"an integer");
+        result = false;
+        break;
+      }
+
+      // Type check the value operand.
       if (!plx_type_check(value, return_type)) result = false;
-      // TODO
+      if (value->type != NULL && !plx_is_int_type(value->type)) {
+        plx_unexpected_type(value, /*expected=*/"an integer");
+        result = false;
+        break;
+      }
       break;
     }
     case PLX_NODE_AND:

@@ -162,10 +162,6 @@ static plx_llvm_unnamed_identifier plx_generate_llvm_ir_ref(
           result_var, value->type, value_var, index->type, index);
       return result_var;
     }
-    case PLX_NODE_SLICE:
-      // TODO
-      assert(false);
-      break;
     case PLX_NODE_FIELD:
       // TODO
       assert(false);
@@ -377,22 +373,533 @@ void plx_generate_llvm_ir_stmt(const struct plx_node* const node,
                           return_value_var);
       break;
     }
-    case PLX_NODE_ASSIGN:
+    case PLX_NODE_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier value_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      plx_llvm_ir_fprintf(stream, "  store %t %%%u, ptr %%%u\n", value->type,
+                          value_var, assignee_var);
       break;
-    case PLX_NODE_ADD_ASSIGN:
+    }
+    case PLX_NODE_ADD_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = add i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = add i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = add i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = add i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load half, ptr %%%u\n"
+                  "  %%%u = fadd fast half %%%u, %%%u\n"
+                  "  store half %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load float, ptr %%%u\n"
+                  "  %%%u = fadd fast float %%%u, %%%u\n"
+                  "  store float %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load double, ptr %%%u\n"
+                  "  %%%u = fadd fast double %%%u, %%%u\n"
+                  "  store double %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_SUB_ASSIGN:
+    }
+    case PLX_NODE_SUB_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = sub i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = sub i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = sub i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = sub i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load half, ptr %%%u\n"
+                  "  %%%u = fsub fast half %%%u, %%%u\n"
+                  "  store half %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load float, ptr %%%u\n"
+                  "  %%%u = fsub fast float %%%u, %%%u\n"
+                  "  store float %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load double, ptr %%%u\n"
+                  "  %%%u = fsub fast double %%%u, %%%u\n"
+                  "  store double %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_MUL_ASSIGN:
+    }
+    case PLX_NODE_MUL_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = mul i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = mul i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = mul i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = mul i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load half, ptr %%%u\n"
+                  "  %%%u = fmul fast half %%%u, %%%u\n"
+                  "  store half %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load float, ptr %%%u\n"
+                  "  %%%u = fmul fast float %%%u, %%%u\n"
+                  "  store float %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load double, ptr %%%u\n"
+                  "  %%%u = fmul fast double %%%u, %%%u\n"
+                  "  store double %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_DIV_ASSIGN:
+    }
+    case PLX_NODE_DIV_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = sdiv i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = sdiv i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = sdiv i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = sdiv i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = udiv i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = udiv i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = udiv i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = udiv i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load half, ptr %%%u\n"
+                  "  %%%u = fdiv fast half %%%u, %%%u\n"
+                  "  store half %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load float, ptr %%%u\n"
+                  "  %%%u = fdiv fast float %%%u, %%%u\n"
+                  "  store float %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_F64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load double, ptr %%%u\n"
+                  "  %%%u = fdiv fast double %%%u, %%%u\n"
+                  "  store double %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_REM_ASSIGN:
+    }
+    case PLX_NODE_REM_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = srem i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = srem i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = srem i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = srem i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = urem i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = urem i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = urem i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = urem i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_LSHIFT_ASSIGN:
+    }
+    case PLX_NODE_LSHIFT_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = shl i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = shl i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = shl i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = shl i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
-    case PLX_NODE_RSHIFT_ASSIGN:
+    }
+    case PLX_NODE_RSHIFT_ASSIGN: {
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      const plx_llvm_unnamed_identifier assignee_var =
+          plx_generate_llvm_ir_ref(assignee, stream, locals);
+      const plx_llvm_unnamed_identifier left_var = (*locals)++;
+      const plx_llvm_unnamed_identifier right_var =
+          plx_generate_llvm_ir_expr(value, stream, locals);
+      const plx_llvm_unnamed_identifier result_var = (*locals)++;
+      assert(assignee->type->kind == value->type->kind);
+      switch (assignee->type->kind) {
+        case PLX_NODE_S8_TYPE:
+        case PLX_NODE_U8_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i8, ptr %%%u\n"
+                  "  %%%u = lshr i8 %%%u, %%%u\n"
+                  "  store i8 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S16_TYPE:
+        case PLX_NODE_U16_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i16, ptr %%%u\n"
+                  "  %%%u = lshr i16 %%%u, %%%u\n"
+                  "  store i16 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S32_TYPE:
+        case PLX_NODE_U32_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i32, ptr %%%u\n"
+                  "  %%%u = lshr i32 %%%u, %%%u\n"
+                  "  store i32 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        case PLX_NODE_S64_TYPE:
+        case PLX_NODE_U64_TYPE:
+          fprintf(stream,
+                  "  %%%u = load i64, ptr %%%u\n"
+                  "  %%%u = lshr i64 %%%u, %%%u\n"
+                  "  store i64 %%%u, ptr %%%u\n",
+                  left_var, assignee_var, result_var, left_var, right_var,
+                  result_var, assignee_var);
+          break;
+        default:
+          assert(false);
+      }
       break;
+    }
     default: {
       assert(false);
     }
@@ -885,15 +1392,15 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
                   right_var);
           break;
         case PLX_NODE_F16_TYPE:
-          fprintf(stream, "  %%%u = fadd half %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fadd fast half %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F32_TYPE:
-          fprintf(stream, "  %%%u = fadd float %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fadd fast float %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F64_TYPE:
-          fprintf(stream, "  %%%u = fadd double %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fadd fast double %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         default:
@@ -931,15 +1438,15 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
                   right_var);
           break;
         case PLX_NODE_F16_TYPE:
-          fprintf(stream, "  %%%u = fsub half %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fsub fast half %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F32_TYPE:
-          fprintf(stream, "  %%%u = fsub float %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fsub fast float %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F64_TYPE:
-          fprintf(stream, "  %%%u = fsub double %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fsub fast double %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         default:
@@ -977,15 +1484,15 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
                   right_var);
           break;
         case PLX_NODE_F16_TYPE:
-          fprintf(stream, "  %%%u = fmul half %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fmul fast half %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F32_TYPE:
-          fprintf(stream, "  %%%u = fmul float %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fmul fast float %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F64_TYPE:
-          fprintf(stream, "  %%%u = fmul double %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fmul fast double %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         default:
@@ -1035,15 +1542,15 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
                   left_var, right_var);
           break;
         case PLX_NODE_F16_TYPE:
-          fprintf(stream, "  %%%u = fdiv half %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fdiv fast half %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F32_TYPE:
-          fprintf(stream, "  %%%u = fdiv float %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fdiv fast float %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         case PLX_NODE_F64_TYPE:
-          fprintf(stream, "  %%%u = fdiv double %%%u, %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fdiv fast double %%%u, %%%u\n", result_var,
                   left_var, right_var);
           break;
         default:
@@ -1224,14 +1731,15 @@ plx_llvm_unnamed_identifier plx_generate_llvm_ir_expr(
                   operand_var);
           break;
         case PLX_NODE_F16_TYPE:
-          fprintf(stream, "  %%%u = fneg half %%%u\n", result_var, operand_var);
+          fprintf(stream, "  %%%u = fneg fast half %%%u\n", result_var,
+                  operand_var);
           break;
         case PLX_NODE_F32_TYPE:
-          fprintf(stream, "  %%%u = fneg float %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fneg fast float %%%u\n", result_var,
                   operand_var);
           break;
         case PLX_NODE_F64_TYPE:
-          fprintf(stream, "  %%%u = fneg double %%%u\n", result_var,
+          fprintf(stream, "  %%%u = fneg fast double %%%u\n", result_var,
                   operand_var);
           break;
         default:
