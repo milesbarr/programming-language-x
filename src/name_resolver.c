@@ -123,7 +123,7 @@ bool plx_resolve_names(struct plx_node* const node,
     default:
       for (struct plx_node* child = node->children; child != NULL;
            child = child->next) {
-        plx_resolve_names(child, symbol_table);
+        if (!plx_resolve_names(child, symbol_table)) result = false;
       }
   }
   return result;
