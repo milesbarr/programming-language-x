@@ -295,7 +295,6 @@ bool plx_type_check(struct plx_node* const node,
       if (value->type != NULL && !plx_is_int_type(value->type)) {
         plx_unexpected_type(value, /*expected=*/"an integer");
         result = false;
-        break;
       }
       break;
     }
@@ -395,7 +394,6 @@ bool plx_type_check(struct plx_node* const node,
       if (!plx_type_eq(left->type, right->type)) {
         plx_operand_type_mismatch(node);
         result = false;
-        break;
       }
       break;
     }
