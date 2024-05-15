@@ -150,80 +150,80 @@ void plx_print(const struct plx_node* const node, FILE* const stream) {
       break;
     }
     case PLX_NODE_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") = (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_ADD_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") += (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_SUB_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") -= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_MUL_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") *= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_DIV_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") /= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_REM_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") %= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_LSHIFT_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") <<= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);
       break;
     }
     case PLX_NODE_RSHIFT_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
       fputc('(', stream);
-      plx_print(target, stream);
+      plx_print(assignee, stream);
       fputs(") >>= (", stream);
       plx_print(value, stream);
       fputs(");\n", stream);

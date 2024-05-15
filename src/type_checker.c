@@ -228,18 +228,18 @@ bool plx_type_check(struct plx_node* const node,
       break;
     }
     case PLX_NODE_ASSIGN: {
-      struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
 
-      // Type check the target.
-      if (!plx_type_check(target, return_type)) result = false;
+      // Type check the assignee.
+      if (!plx_type_check(assignee, return_type)) result = false;
 
       // Type check the value.
       if (!plx_type_check(value, return_type)) result = false;
 
       // Check for matching types.
-      if (target->type != NULL && value->type != NULL &&
-          !plx_type_eq(target->type, value->type)) {
+      if (assignee->type != NULL && value->type != NULL &&
+          !plx_type_eq(assignee->type, value->type)) {
         plx_operand_type_mismatch(node);
         result = false;
       }
@@ -252,10 +252,10 @@ bool plx_type_check(struct plx_node* const node,
     case PLX_NODE_REM_ASSIGN:
     case PLX_NODE_LSHIFT_ASSIGN:
     case PLX_NODE_RSHIFT_ASSIGN: {
-      struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
+      struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
 
-      if (!plx_type_check(target, return_type)) result = false;
+      if (!plx_type_check(assignee, return_type)) result = false;
       if (!plx_type_check(value, return_type)) result = false;
       // TODO
       break;

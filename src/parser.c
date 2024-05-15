@@ -360,9 +360,9 @@ struct plx_node* plx_parse_return(struct plx_tokenizer* const tokenizer) {
 struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
   const struct plx_source_code_location loc = tokenizer->loc;
 
-  // Parse the target.
-  struct plx_node* const target = plx_parse_unary_expr(tokenizer);
-  if (plx_unlikely(target == NULL)) return NULL;
+  // Parse the assignee.
+  struct plx_node* const assignee = plx_parse_unary_expr(tokenizer);
+  if (plx_unlikely(assignee == NULL)) return NULL;
 
   enum plx_node_kind kind;
   switch (tokenizer->token) {
@@ -392,7 +392,7 @@ struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
       break;
     default:
       if (!plx_accept_token(tokenizer, PLX_TOKEN_SEMICOLON)) return NULL;
-      return target;
+      return assignee;
   }
   plx_next_token(tokenizer);
 
@@ -404,8 +404,8 @@ struct plx_node* plx_parse_assign(struct plx_tokenizer* const tokenizer) {
 
   // Create the node.
   struct plx_node* const assign = plx_new_node(kind, &loc);
-  assign->children = target;
-  target->next = value;
+  assign->children = assignee;
+  assignee->next = value;
   return assign;
 }
 

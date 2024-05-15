@@ -67,11 +67,11 @@ bool plx_validate_ast(const struct plx_node* const node) {
     case PLX_NODE_REM_ASSIGN:
     case PLX_NODE_LSHIFT_ASSIGN:
     case PLX_NODE_RSHIFT_ASSIGN: {
-      const struct plx_node *target, *value;
-      plx_extract_children(node, &target, &value);
-      if (!plx_validate_ast(target)) result = false;
-      if (!plx_is_referenceable_expr(target)) {
-        plx_expr_not_assignable(target);
+      const struct plx_node *assignee, *value;
+      plx_extract_children(node, &assignee, &value);
+      if (!plx_validate_ast(assignee)) result = false;
+      if (!plx_is_referenceable_expr(assignee)) {
+        plx_expr_not_assignable(assignee);
         result = false;
       }
       if (!plx_validate_ast(value)) result = false;
